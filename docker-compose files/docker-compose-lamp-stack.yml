@@ -1,0 +1,50 @@
+# Create the below network and storage
+# docker network create lamp-stack-net
+# docker volume create --name=mysql_storage_01
+
+version: '3'
+
+networks:
+  lamp-stack-net:
+    external: true
+
+volumes:
+  mysql_storage_01:
+    external: true
+
+services:
+
+  lamp_stack:
+    image: lamp_stack_app:v1
+    privileged: true
+    build:
+      context: ../code/
+      dockerfile: Dockerfile-lamp.dockerfile
+    container_name: app_cont
+    networks:
+      - lamp-stack-net
+    ports:
+      - "8010:80"
+    volumes:
+      - path_to_code/:/var/www/html/
+
+  service_mysql:
+    image: mysql:5.7.25
+    container_name: mysql_cont
+    ports:
+      - "3306:3306"
+    environment:
+      # MYSQL_ROOT_PASSWORD: ''
+      # MYSQL_ALLOW_EMPTY_PASSWORD : 'yes'
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: test_db
+      MYSQL_USER: test_user
+      MYSQL_PASSWORD: test@123
+    networks:
+      - lamp-stack-net
+    restart: always
+    volumes:
+      - path_to_dump_file/:/home/
+      - mysql_storage_01:/var/lib/mysql
+  
+  
